@@ -11,6 +11,8 @@ class Window(QMainWindow):
         self.setWindowTitle("ARBF")
         self.setGeometry(300, 250, 350, 200)
 
+        self.new_text =  QtWidgets.QLabel(self)
+
         self.main_text = QtWidgets.QLabel(self)
         self.main_text.setText("Тут должно будет что-то написано")
         self.main_text.move(70, 100)
@@ -22,7 +24,9 @@ class Window(QMainWindow):
         self.btn.adjustSize()
         self.btn.clicked.connect(self.add_label)
     def add_label(self):
-        print("Здарова!")
+        self.new_text.setText("Здарова")
+        self.new_text.move(100, 50)
+        self.new_text.adjustSize()
 
 def application():
     app = QApplication(sys.argv)
