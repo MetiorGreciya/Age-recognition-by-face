@@ -5,7 +5,13 @@ import sys
 
 def application():
     app = QApplication(sys.argv)
-    window = QMainWindow
+    window = QMainWindow()
 
     window.setWindowTitle("Age recognition by face")
+    window.setGeometry(300, 250, 350, 200)
 
+    window.show()
+    sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    application()
