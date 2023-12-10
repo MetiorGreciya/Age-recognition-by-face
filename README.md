@@ -1,4 +1,4 @@
-# Image Analyzer App
+# Face Analyzer App
 
 ## Описание
 
