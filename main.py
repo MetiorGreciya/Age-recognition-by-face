@@ -51,27 +51,6 @@ class ImageAnalyzerApp(QWidget):
 
             self.image_path = fname
 
-
-data = {
-    "Name": [],
-    "Age": [],
-    "Gender": [],
-}
-
-for file in os.listdir("images"):
-    result = DeepFace.analyze(cv2.imread(f"images/{file}"),
-                              actions=("age", "gender"))
-
-    data["Name"].append(file.split(".")[0])
-    data["Age"].append(result[0]["age"])
-    data["Gender"].append(result[0]["dominant_gender"])
-
-df = pd.DataFrame(data)
-print(df)
-
-df.to_csv("people.csv")
-
-
     def analyzeImage(self):
         if hasattr(self, 'image_path'):
             img = cv2.imread(self.image_path)
@@ -85,3 +64,23 @@ df.to_csv("people.csv")
 
             cv2.imshow("Results", img)
             cv2.waitKey(0)
+
+            data = {
+                "Name": [self.name_input.text()],
+                "Age": [result[0]["age"]],
+                "Gender": [result[0]["dominant_gender"]]
+            }
+
+            df = pd.DataFrame(data)
+
+            if os.path.exists("people.csv"):
+                existing_df = pd.read_csv("people.csv")
+                df = pd.concat([existing_df, df], ignore_index=True)
+
+            df.to_csv("people.csv", index=False)
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = ImageAnalyzerApp()
+    window.show()
+    app.exec_()
