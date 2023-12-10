@@ -91,45 +91,57 @@ class ImageAnalyzerApp(QWidget):
         fname, _ = QFileDialog.getOpenFileName(self, 'Open Image', '', 'Image Files (*.png *.jpg *.bmp)')
         if fname:
             pixmap = QPixmap(fname)
-            self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.KeepAspectRatio))
-            self.image_label.setAlignment(Qt.AlignCenter)
+            self.image_frame.setPixmap(
+                pixmap.scaled(self.image_frame.size(), Qt.KeepAspectRatio))
+            self.image_frame.setAlignment(Qt.AlignCenter)
 
             self.image_path = fname
-
     def analyzeImage(self):
         if hasattr(self, 'image_path'):
+            self.clearFaceInfo()
+            self.addFaceInfo("Please wait...")
+
+            QCoreApplication.processEvents()
+
             img = cv2.imread(self.image_path)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             faces = cv2.CascadeClassifier('models/face.xml')
-            results = faces.detectMultiScale(gray, scaleFactor=1.5, minNeighbors= 2)
+            results = faces.detectMultiScale(gray, scaleFactor=1.5,
+                                             minNeighbors=2)
 
-            for (x, y, w, h) in results:
-                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), thickness=2)
+            face_data = []
 
-            cv2.imshow("Results", img)
-            cv2.waitKey(0)
+            for idx, (x, y, w, h) in enumerate(results, 1):
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255),
+                              thickness=2)
 
-            result = DeepFace.analyze(img, actions=("age", "gender"))
+                face_img = img[y:y + h, x:x + w].copy()
+                result = DeepFace.analyze(face_img, actions=("age", "gender"))
 
-            self.name_input.setText(
-                os.path.basename(self.image_path).split(".")[0])
-            self.age_input.setText(str(result[0]["age"]))
-            self.gender_input.setText(result[0]["dominant_gender"])
+                face_data.append({
+                    "Face": idx,
+                    "Age": result[0]["age"],
+                    "Gender": result[0]["dominant_gender"]
+                })
 
-            data = {
-                "Name": [self.name_input.text()],
-                "Age": [result[0]["age"]],
-                "Gender": [result[0]["dominant_gender"]]
-            }
+            self.clearFaceInfo()
+            if face_data:
+                for face_info in face_data:
+                    info_str = f"Face {face_info['Face']}: Age - {face_info['Age']}, Gender - {face_info['Gender']}"
+                    self.addFaceInfo(info_str)
 
-            df = pd.DataFrame(data)
+                pixmap_result = QPixmap.fromImage(
+                    QImage(img.data, img.shape[1], img.shape[0],
+                           img.shape[1] * 3, QImage.Format_RGB888))
+                self.image_frame.setPixmap(
+                    pixmap_result.scaled(self.image_frame.size(),
+                                         Qt.KeepAspectRatio))
 
-            if os.path.exists("people.csv"):
-                existing_df = pd.read_csv("people.csv")
-                df = pd.concat([existing_df, df], ignore_index=True)
-
-            df.to_csv("people.csv", index=False)
+                cv2.imshow("Results", img)
+                cv2.waitKey(0)
+            else:
+                self.addFaceInfo("No faces detected")
 
 if __name__ == '__main__':
     app = QApplication([])
