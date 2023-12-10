@@ -1,10 +1,10 @@
 import os
 import cv2
-import pandas as pd
 from deepface import DeepFace
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QLineEdit
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore  import Qt, QCoreApplication
+
 
 class ImageAnalyzerApp(QWidget):
     def __init__(self):
@@ -16,31 +16,76 @@ class ImageAnalyzerApp(QWidget):
         self.setWindowTitle('Image Analyzer App')
         self.setGeometry(100, 100, 800, 600)
 
-        self.image_label = QLabel(self)
-        self.image_label.setAlignment(Qt.AlignCenter)
+        central_layout = QVBoxLayout()
+
+        self.image_frame = QLabel(self)
+        self.image_frame.setStyleSheet("""
+            border: 2px solid #3498DB;
+            background-color: #34495E;
+        """)
+        central_layout.addWidget(self.image_frame, 1)
 
         self.btn_open = QPushButton('Open Image', self)
         self.btn_open.clicked.connect(self.openImage)
+        self.btn_open.setToolTip('Open an image for analysis')
+        central_layout.addWidget(self.btn_open)
 
         self.btn_analyze = QPushButton('Analyze Image', self)
         self.btn_analyze.clicked.connect(self.analyzeImage)
+        self.btn_analyze.setToolTip(
+            'Analyze the opened image and display results')
+        central_layout.addWidget(self.btn_analyze)
 
-        self.name_input = QLineEdit(self)
-        self.age_input = QLineEdit(self)
-        self.gender_input = QLineEdit(self)
+        self.btn_delete = QPushButton('Delete Image', self)
+        self.btn_delete.clicked.connect(self.deleteImage)
+        self.btn_delete.setToolTip('Delete the currently displayed image')
+        central_layout.addWidget(self.btn_delete)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.image_label)
-        layout.addWidget(self.btn_open)
-        layout.addWidget(self.btn_analyze)
-        layout.addWidget(QLabel('Name:'))
-        layout.addWidget(self.name_input)
-        layout.addWidget(QLabel('Age:'))
-        layout.addWidget(self.age_input)
-        layout.addWidget(QLabel('Gender:'))
-        layout.addWidget(self.gender_input)
+        self.btn_clear = QPushButton('Clear Results', self)
+        self.btn_clear.clicked.connect(self.clearResults)
+        self.btn_clear.setToolTip(
+            'Clear the displayed results and delete the CSV file')
+        central_layout.addWidget(self.btn_clear)
 
-        self.setLayout(layout)
+        self.face_info_layout = QVBoxLayout()
+        central_layout.addLayout(self.face_info_layout, 1)
+
+        self.setLayout(central_layout)
+
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #2E353F;
+                color: #ECF0F1;
+                font-size: 14px;
+            }
+
+            QPushButton {
+                background-color: #3498DB;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+            }
+
+            QPushButton:hover {
+                background-color: #2980B9;
+            }
+
+            QLineEdit {
+                padding: 8px;
+                border: 1px solid #4A90E2;
+                border-radius: 3px;
+                background-color: #34495E;
+                color: #ECF0F1;
+            }
+
+            QLabel {
+                color: #ECF0F1;
+            }
+        """)
+
+        self.face_labels = []
 
     def openImage(self):
         fname, _ = QFileDialog.getOpenFileName(self, 'Open Image', '', 'Image Files (*.png *.jpg *.bmp)')
