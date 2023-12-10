@@ -65,6 +65,13 @@ class ImageAnalyzerApp(QWidget):
             cv2.imshow("Results", img)
             cv2.waitKey(0)
 
+            result = DeepFace.analyze(img, actions=("age", "gender"))
+
+            self.name_input.setText(
+                os.path.basename(self.image_path).split(".")[0])
+            self.age_input.setText(str(result[0]["age"]))
+            self.gender_input.setText(result[0]["dominant_gender"])
+
             data = {
                 "Name": [self.name_input.text()],
                 "Age": [result[0]["age"]],
