@@ -185,7 +185,7 @@ class ImageAnalyzerApp(QWidget):
         self.face_labels = []
 
     def displayResults(self, face_data, img):
-        # Метод для отображения результатов анализа лиц и обновления изображения
+        # Мето для отображения результатов анализа лиц и обновления изображения
         for face_info in face_data:
             info_str = f"Face {face_info['Face']}: Age - {face_info['Age']}, Gender - {face_info['Gender']}"
             self.addFaceInfo(info_str)
